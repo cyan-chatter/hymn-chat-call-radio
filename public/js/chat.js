@@ -239,12 +239,32 @@ const playAudio = async (bufferdata) => {
 
 
 //RADIO
-var radioSound = new Howl({
-  src: "", //url //[urlResolved recommended but using url for now] 
-  format: ['mp3', 'aac'],
-  volume : 0.5,
-  html5 : true
-});
+let radioSound, volume = 0.5;
+
+const playRadioSound = async (url) => {
+  if(radioSound) radioSound.stop();
+  radioSound = new Howl({
+    src: url, //url //[urlResolved recommended but using url for now] 
+    format: ['mp3', 'aac'],
+    volume,
+    html5 : true
+  });
+  radioSound.play();
+}
+
+const stopRadioSound = () => {
+  radioSound.stop();
+}
+
+const isPlaying = () => {
+  return radioSound.playing()
+}
+
+const setVolume = (vol) => {
+  radioSound.volume(vol)
+  volume = vol;
+}
+
 
 document.querySelectorAll('.tag').forEach(($tag)=>{
   $tag.addEventListener('click', (e)=>{
@@ -252,7 +272,7 @@ document.querySelectorAll('.tag').forEach(($tag)=>{
   })
 })
 
-const selectTag = ($tag) => {
+const selectTag = async ($tag) => {
   const tagname = $tag.textContent
   const index = parseInt($tag.getAttribute('key'))
   document.querySelectorAll('.selected-tag').forEach(($selectedTag)=>{
@@ -268,10 +288,17 @@ const selectTag = ($tag) => {
     const stationName = station.name
     const stationId = station.id
     const stationUrl = station.url //[urlResolved recommended but using url for now]
-    const stationTags = station.tags
+    let stationTags = station.tags
     const stationCountry = station.country
     const stationLanguage = station.language
+    // const stationTags = 'rock'
+    // const stationCountry = 'us'
+    // const stationLanguage = 'english'
   
+    if(stationTags.length > 2){
+      stationTags = stationTags.slice(0,2)
+    }
+
     const html = Mustache.render(stationTemplate,{
       stationName,
       stationTags,
@@ -280,10 +307,36 @@ const selectTag = ($tag) => {
       stationId,
       stationUrl
     })
-    const $stations = document.querySelector('.stations')
-    $stations.appendChild(html)
+    
+    const $stations = document.getElementById('stations')
+    $stations.insertAdjacentHTML('beforeend',html)
+    const $station = document.querySelector(`[key='${stationId}']`)
+    const $stationPlay = $station.querySelector('.station-play-btn')
+    $stationPlay.addEventListener('click', (e)=>{
+      selectStation($station)
+    })
   })
 }
+
+const nowPlaying = {
+  stationName: '',
+  stationId: '',
+  stationUrl: ''
+}
+
+const updateNowPlaying = ({stationName, stationId, stationUrl}) => {
+  nowPlaying.stationName = stationName
+  nowPlaying.stationId = stationId
+  nowPlaying.stationUrl = stationUrl
+}
+
+socket.on('catch-webaudiostate', (channelPlaying) => {
+  if(channelPlaying === null || (channelPlaying.stationId === null)){
+    return
+  }
+  play(channelPlaying.stationName, channelPlaying.stationUrl, channelPlaying.stationId)
+})
+
 
 const selectStation = ($station) => {
   const stationId = $station.getAttribute('key')
@@ -293,81 +346,79 @@ const selectStation = ($station) => {
     $selectedStation.classList.remove('selected-station')
   })
   $station.classList.add('selected-station')
-  play(stationName, stationUrl)
-}
-
-const play = async (stationName, stationUrl) => {
-  document.getElementById('now-playing-station').innerHTML = stationName
-  radioSound.src = stationUrl
-  radioSound.play()
-}
-
-const syncplay = () => {
-  radioSound.stop()
-  radioSound.play()
-}
-
-document.getElementById('play-pause-btn').addEventListener('click', (e) => {
-  if(radioSound.playing()) {
-    radioSound.pause()
-    e.target.innerHTML = 'Play'
-  } else {
-    play()
-    e.target.innerHTML = 'Pause'
+  const commandData = {
+    command : 'play',
+    stationName,
+    stationUrl,
+    stationId
   }
+  socket.emit('send-command',commandData)
+}
+
+document.getElementById('play-pause-btn').addEventListener('click', () => {
+  let commandData;
+  if(!isPlaying()){
+    commandData = {
+      command : 'play',
+      stationName : nowPlaying.stationName,
+      stationUrl : nowPlaying.stationUrl,
+      stationId : nowPlaying.stationId
+    }  
+  }
+  else{
+    commandData = {
+      command : 'stop',
+      stationName : null,
+      stationUrl : null,
+      stationId : null
+    }  
+  }
+  socket.emit('send-command',commandData)
 })
 
-document.getElementById('sync-play-btn').addEventListener('click', (e) => {
-  syncplay()
-})
 
+const play = async (stationName, stationUrl, stationId) => {
+  const nps = document.querySelector('.now-playing-station')
+  nps.innerHTML = stationName
+  const ppbtn = document.getElementById('play-pause-btn')
+  ppbtn.innerHTML = 'Pause'
+  updateNowPlaying({stationName, stationId, stationUrl})
+  playRadioSound(stationUrl)
+}
+const stop = async (stationName, stationUrl, stationId) => {
+  const ppbtn = document.getElementById('play-pause-btn')
+  ppbtn.innerHTML = 'Play'
+  stopRadioSound()
+}
 document.getElementById('volume-slider').addEventListener('input', (e)=> {
-  radioSound.volume(e.target.value)
+  setVolume(e.target.value)
+})
+socket.on('play', (data)=>{
+  play(data.stationName, data.stationUrl, data.stationId)
+})
+socket.on('stop', (data) => {
+  stop(data.stationName, data.stationUrl, data.stationId)
 })
 
-document.querySelectorAll('.station').forEach(($station)=>{
-  $station.addEventListener('click', (e)=>{
-    selectStation($station)
-  })
-})
+
+
 
 socket.on('test', async (data) => {
   const stations = await rbapi.searchStations({
     language: 'english',
-    tag: data,
+    tag: 'rock',
     limit: 3
   })
   console.log(stations)
+  const url = stations[0].url
   var sound = new Howl({
-    src: stations[0].url, //[urlResolved recommended but using url for now]
+    src: url, 
     format: ['mp3', 'aac'],
     html5 : true
   });
   sound.play();
 })
 
-socket.on('play', (data)=>{
-  playAudio(data.buffer)
-  socket.emit('webaudiostate', null)
-})
 
-socket.on('pause', (data)=>{
-  if(audioCtx.state === 'running') {
-    audioCtx.suspend()
-  }
-  socket.emit('webaudiostate', null)
-})
-
-socket.on('resume', (data)=>{
-  if(audioCtx.state === 'suspended') {
-    audioCtx.resume()  
-  }
-  socket.emit('webaudiostate', null)
-})
-
-socket.on('stop', (data) => {
-  source.stop(0);
-  socket.emit('webaudiostate', null)
-})
 
 

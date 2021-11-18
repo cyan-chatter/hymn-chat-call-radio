@@ -148,6 +148,7 @@ io.on('connection', (socket)=>{
         socket.emit('message', generateMessage('', 'Welcome!'))
         socket.broadcast.to(user.room).emit('message', generateMessage('', `${user.username} has joined the chat`))    
         let room = myroomsmap.get(user.room)
+        socket.emit('catch-webaudiostate', room.channelPlaying)
         myroomsmap.set(user.room, {
             ...room,
             actives : ++room.actives
@@ -156,7 +157,6 @@ io.on('connection', (socket)=>{
             room: options.roomname,
             users: getUsersInRoom(user.room)
         })
-        
         callback()
     })
 
@@ -183,6 +183,7 @@ io.on('connection', (socket)=>{
             let room = myroomsmap.get(user.room)
             myroomsmap.set(user.room, {
                 ...room,
+                channelPlaying : null,
                 actives : --room.actives
             })
         }
@@ -195,19 +196,11 @@ io.on('connection', (socket)=>{
         callback()
     })
 
-    socket.on('send-command',async (commandText, callback)=>{   
+    socket.on('send-command',async (commandText)=>{   
         const user = getUser(socket.id)
         const roomid = user.room
-        const room = myroomsmap.get(roomid)
         io.to(roomid).emit('message',generateMessage(user.username, commandText)) 
-        await executeCommand(commandText,io,roomid,room.channelPlaying)
-        callback('Command Delivered!')
-    })
-    
-    socket.on('webaudiostate', (channelPlaying) => {
-        const room = myroomsmap.get(user.room)
-        room.channelPlaying = channelPlaying
-        myroomsmap.set(user.room, room)
+        await executeCommand(commandText,io,roomid,myroomsmap)
     })
     
 })

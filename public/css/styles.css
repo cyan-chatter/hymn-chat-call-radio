@@ -201,3 +201,136 @@ button:disabled {
     font-weight: 300;
     padding: 12px 24px 0 24px;
 }
+
+
+/* Radio Styles */
+
+/* Now Playing */
+
+.now-playing{
+    position: absolute;
+    bottom : 5px;
+    left : 0px;
+    margin : 5px 5px 5px 0px;
+    background: #333744;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5%;
+    border : 1px solid white;   
+}
+
+#volume-slider{
+        -webkit-appearance: none;  /* Override default CSS styles */
+        appearance: none;
+        width: 100%; /* Full-width */
+        height: 10px; /* Specified height */
+        background: #d3d3d3; /* Grey background */
+        outline: none; /* Remove outline */
+        opacity: 0.3; /* Set transparency (for mouse-over effects on hover) */
+        -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+        transition: opacity .2s;
+        cursor: pointer;  
+}
+
+#volume-slider:hover{
+    opacity: 1; /* Fully shown on mouse-over */
+}
+
+.now-playing-station{
+    width: 100%;
+    height: 100px;
+    padding: 5px 5px 5px 20px;
+    text-align: center;
+    background: #333744;
+    border-top-right-radius: 5%;
+    border-top-left-radius: 5%;
+    color:white;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* Stations */
+
+#stations{
+    margin-left: auto;
+}
+
+.tags{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 5px 5px 5px;
+}
+
+.tag{
+    border : 2px solid seagreen;
+    padding: 5px 5px 5px 5px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tag:hover{
+    background: lime;
+    color: black;
+    border : 1px solid white;
+    transition: all .3s ease;
+}
+
+.station{
+    border : 2px solid white;
+    padding: 5px 5px 5px 5px;
+    margin : 5px 3px 5px 3px;
+}
+
+.station-name{
+    padding: 5px 5px 5px 5px;
+    background-color: springgreen;
+    color: black;
+    border-radius: 5px;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.station-genre{
+    display: flex;
+    flex-wrap: wrap;   
+}
+
+.feature{
+    padding : 2px 4px 2px 4px;
+    background-color: rgb(103, 117, 110);
+    border-radius: 5px;
+    color: white;
+    margin : 2px 3px 2px 3px;
+    width: fit-content;
+    font-size : 12px;
+}
+
+.station-play-btn{
+    cursor: pointer;
+    transition: all .3s ease;
+}
+.station-play-btn:hover{
+    border : 2px solid rgb(74, 165, 130);
+    border-radius : 0px;
+    background: lime;
+}
+
+.selected-tag{
+    background: springgreen;
+    color: black;
+}
+
+.selected-station{
+    background: whitesmoke;
+}
