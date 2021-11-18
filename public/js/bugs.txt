@@ -1,0 +1,2 @@
+When message is sent and location is requested, one cannot use the button again even if the network comes back
+allow user to see preferred time format

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatter</title>
+    <link rel = "stylesheet" href="/css/styles.css">
+    <link rel = "stylesheet" href="/css/lobby.css">
+</head>
+<body>
+    <div class="username-header"><%= username %></div>
+    <div class="create-room-div">
+        <p class="side-head">Create Room</p>
+        <label>Enter Room Name</label>
+        <input type="text" class="create-room-name">
+        <button class="create-room-btn">Create</button> 
+    </div>
+    <!-- <div class="join-invited-room-div">
+        <p class="side-head">Join Invited Room</p>
+        <label>Enter Room ID</label>
+        <input type="text" class="join-invited-room-id">
+        <button class="join-invited-room-btn">Join</button> 
+    </div> -->
+    <div> 
+        <div>
+            <p><h3>Rooms</h3></p>
+            <% myrooms.forEach(function(item,index){ %>
+                <div class="room-option" id="room-<%= item.roomid %>" roomid="<%= item.roomid %>" roomtype="<%= item.roomtype %>"> 
+                    <p roomid="<%= item.roomid %>"><%= item.roomname %></p>
+                    <!-- <button class="copyRoomIdBtn" roomid="<%= item.roomid %>"> Copy Room ID </button>  -->
+                </div>
+            <% }) %>
+        </div> 
+        <!-- <div>
+            <p><h3>Invited Rooms</h3></p>
+            <% invrooms.forEach(function(item,index){ %>
+                <div class="room-option" id="room-<%= item.roomid %>" roomid="<%= item.roomid %>" roomtype="<%= item.roomtype %>"> 
+                    <p roomid="<%= item.roomid %>"><%= item.roomname %></p>
+                </div>
+            <% }) %>
+        </div> -->
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.4/axios.min.js" integrity="sha512-lTLt+W7MrmDfKam+r3D2LURu0F47a3QaW5nF0c6Hl0JDZ57ruei+ovbg7BrZ+0bjVJ5YgzsAWE+RreERbpPE1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/js/lobby.js"></script>
+</body>
+</html>

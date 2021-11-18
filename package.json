@@ -1,0 +1,33 @@
+{
+  "name": "hymn-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "nodemon -e js,css,html src/main.js",
+    "pre": "peerjs --port 3001",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sayan Chatterjee",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "bad-words": "^3.0.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "ejs": "^3.1.3",
+    "express": "^4.17.1",
+    "lyrics-finder": "^21.7.0",
+    "node-fetch": "^3.1.0",
+    "peer": "^0.6.1",
+    "socket.io": "^2.3.0",
+    "socket.io-stream": "^0.5.3",
+    "spotify-web-api-node": "^5.0.2",
+    "uuid": "^8.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.13"
+  }
+}
