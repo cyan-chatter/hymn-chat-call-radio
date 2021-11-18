@@ -35,7 +35,6 @@ module.exports = async function (commandData,io,roomid,myroomsmap){
     const room = myroomsmap.get(roomid)
     room.channelPlaying = input
     myroomsmap.set(roomid, room)
-
     io.to(roomid).emit(command,input)    
 }
 

@@ -113,12 +113,11 @@ app.get('/room/:roomid/:username', (req,res) => {
         'country',
         'dance',
         'disco',
-        'house',
         'jazz',
         'pop',
         'rap',
         'retro',
-        'rock',
+        'rock'
     ]
     let data = {
         username : req.params.username,
@@ -129,11 +128,11 @@ app.get('/room/:roomid/:username', (req,res) => {
     res.render('chat', data)
 })
   
-  app.get("/lyrics", async (req, res) => {
+app.get("/lyrics", async (req, res) => {
     const lyrics =
-      (await lyricsFinder(req.query.artist, req.query.track)) || "No Lyrics Found"
+        (await lyricsFinder(req.query.artist, req.query.track)) || "No Lyrics Found"
     res.json({ lyrics })
-  })
+})
 
 
 io.on('connection', (socket)=>{
@@ -169,6 +168,8 @@ io.on('connection', (socket)=>{
         
         io.to(user.room).emit('message',generateMessage(user.username, messageText))
         callback('Message Delivered!')
+        const room = myroomsmap.get(user.room)
+        console.log(room.channelPlaying)
     })
 
     socket.on('disconnect',async ()=>{
@@ -181,10 +182,15 @@ io.on('connection', (socket)=>{
                 users: getUsersInRoom(user.room)
             })
             let room = myroomsmap.get(user.room)
+            let cp = room.channelPlaying
+            --room.actives
+            if(room.actives === 0){
+                cp = null
+            }
             myroomsmap.set(user.room, {
                 ...room,
-                channelPlaying : null,
-                actives : --room.actives
+                channelPlaying : cp,
+                actives : room.actives
             })
         }
     })

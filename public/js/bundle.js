@@ -332,7 +332,9 @@ const updateNowPlaying = ({stationName, stationId, stationUrl}) => {
 }
 
 socket.on('catch-webaudiostate', (channelPlaying) => {
-  if(channelPlaying === null || (channelPlaying.stationId === null)){
+  
+  console.log(channelPlaying)
+  if(channelPlaying === null || (channelPlaying.stationUrl === null)){
     return
   }
   play(channelPlaying.stationName, channelPlaying.stationUrl, channelPlaying.stationId)
