@@ -280,12 +280,19 @@ const selectTag = async ($tag) => {
     $selectedTag.classList.remove('selected-tag')
   })
   $tag.classList.add('selected-tag')
-  const stations = await rbapi.searchStations({
+  const stations1 = await rbapi.searchStations({
     language: 'english',
     tag: tagname,
-    limit: 10
+    limit: 100
   })
+  const stations2 = await rbapi.searchStations({
+    country : 'india',
+    tag: tagname,
+    limit: 100
+  })
+  const stations = stations1.concat(stations2)
   const $stations = document.getElementById('stations')
+  $stations.innerHTML = null
   stations.forEach((station)=>{
     const stationName = station.name
     const stationId = station.id
@@ -310,7 +317,6 @@ const selectTag = async ($tag) => {
       stationUrl
     })
     
-    $stations.innerHTML = null
     $stations.insertAdjacentHTML('beforeend',html)
     const $station = document.querySelector(`[key='${stationId}']`)
     const $stationPlay = $station.querySelector('.station-play-btn')

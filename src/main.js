@@ -108,7 +108,6 @@ app.get('/room/:roomid/:username', (req,res) => {
     console.log(room)
     if(!room) return res.redirect('/')
     const tags = [
-        'all',
         'classical',
         'country',
         'dance',
