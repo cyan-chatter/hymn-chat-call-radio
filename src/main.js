@@ -205,7 +205,6 @@ io.on('connection', (socket)=>{
     socket.on('send-command',async (commandText)=>{   
         const user = getUser(socket.id)
         const roomid = user.room
-        io.to(roomid).emit('message',generateMessage(user.username, commandText)) 
         await executeCommand(commandText,io,roomid,myroomsmap)
     })
     

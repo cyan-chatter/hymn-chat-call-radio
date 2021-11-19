@@ -250,19 +250,20 @@ const playRadioSound = async (url) => {
     volume,
     html5 : true
   });
-  radioSound.play();
+  if(radioSound) radioSound.play();
 }
 
 const stopRadioSound = () => {
-  radioSound.stop();
+  if(radioSound) radioSound.stop();
 }
 
 const isPlaying = () => {
+  if(!radioSound) return false
   return radioSound.playing()
 }
 
 const setVolume = (vol) => {
-  radioSound.volume(vol)
+  if(radioSound) radioSound.volume(vol)
   volume = vol;
 }
 
@@ -285,6 +286,7 @@ const selectTag = async ($tag) => {
     tag: tagname,
     limit: 10
   })
+  const $stations = document.getElementById('stations')
   stations.forEach((station)=>{
     const stationName = station.name
     const stationId = station.id
@@ -309,7 +311,7 @@ const selectTag = async ($tag) => {
       stationUrl
     })
     
-    const $stations = document.getElementById('stations')
+    $stations.innerHTML = null
     $stations.insertAdjacentHTML('beforeend',html)
     const $station = document.querySelector(`[key='${stationId}']`)
     const $stationPlay = $station.querySelector('.station-play-btn')
@@ -320,9 +322,9 @@ const selectTag = async ($tag) => {
 }
 
 const nowPlaying = {
-  stationName: '',
-  stationId: '',
-  stationUrl: ''
+  stationName: null,
+  stationId: null,
+  stationUrl: null
 }
 
 const updateNowPlaying = ({stationName, stationId, stationUrl}) => {
@@ -334,7 +336,7 @@ const updateNowPlaying = ({stationName, stationId, stationUrl}) => {
 socket.on('catch-webaudiostate', (channelPlaying) => {
   
   console.log(channelPlaying)
-  if(channelPlaying === null || (channelPlaying.stationUrl === null)){
+  if(channelPlaying === null || channelPlaying.stationUrl === null){
     return
   }
   play(channelPlaying.stationName, channelPlaying.stationUrl, channelPlaying.stationId)
@@ -360,23 +362,25 @@ const selectStation = ($station) => {
 
 document.getElementById('play-pause-btn').addEventListener('click', () => {
   let commandData;
-  if(!isPlaying()){
-    commandData = {
-      command : 'play',
-      stationName : nowPlaying.stationName,
-      stationUrl : nowPlaying.stationUrl,
-      stationId : nowPlaying.stationId
-    }  
+  if(nowPlaying.stationUrl){
+    if(!isPlaying()){
+      commandData = {
+        command : 'play',
+        stationName : nowPlaying.stationName,
+        stationUrl : nowPlaying.stationUrl,
+        stationId : nowPlaying.stationId
+      }  
+    }
+    else{
+      commandData = {
+        command : 'stop',
+        stationName : null,
+        stationUrl : null,
+        stationId : null
+      }  
+    }
+    socket.emit('send-command',commandData)
   }
-  else{
-    commandData = {
-      command : 'stop',
-      stationName : null,
-      stationUrl : null,
-      stationId : null
-    }  
-  }
-  socket.emit('send-command',commandData)
 })
 
 
