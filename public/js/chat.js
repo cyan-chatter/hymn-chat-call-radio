@@ -1,7 +1,6 @@
 const socket = io()
-const {RadioBrowserApi, StationSearchOrder, StationSearchType} = require('radio-browser-api')
+const {RadioBrowserApi} = require('radio-browser-api') //{RadioBrowserApi, StationSearchOrder, StationSearchType}
 const rbapi = new RadioBrowserApi('Hymn-Chat-Call-Radio')
-console.log(rbapi)
 
 const $messageForm = document.querySelector('#message-form')
 const $messageFormInput = $messageForm.querySelector('input')
@@ -15,7 +14,6 @@ const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 const stationTemplate = document.querySelector('#station-template').innerHTML
 
 const audioGrid = document.getElementById('audio-grid')
-const musicGrid = document.getElementById('music-grid')
 const micbtn = document.getElementById('toggle-mic-btn')
 
 let micmuted = true
@@ -37,29 +35,19 @@ navigator.mediaDevices.getUserMedia({
   video: false,
   audio: true
 }).then(stream => {
-  
-  //Stream Object
-  console.log("stream",stream)
   stream.getTracks().forEach((t) => {
-    console.log("initial disable")
     if (t.kind === 'audio') t.enabled = false
   })
   addaudioStream(myaudio, stream)
-
-
   micbtn.addEventListener('click', ()=>{  
     micmuted  = !micmuted
     if(micmuted){
-      console.log('muted') 
       stream.getTracks().forEach((t) => {
-        console.log("event disable")
         if (t.kind === 'audio') t.enabled = false
       })
     } 
     else{
-      console.log('unmuted')
       stream.getTracks().forEach((t) => {
-        console.log("event enable")
         if (t.kind === 'audio') t.enabled = true
       })
     }
@@ -67,17 +55,15 @@ navigator.mediaDevices.getUserMedia({
   })
 
   myPeer.on('call', call => {
-    console.log("incoming call")
     call.answer(stream)
     const audio = newEl('audio')
     call.on('stream', useraudioStream => {
-      console.log("incoming audio called")
+      //console.log("incoming audio called")
       addaudioStream(audio, useraudioStream)
     })
   })
 
   socket.on('user-connected', userId => {
-      console.log("new user connects", userId)
       setTimeout(()=>connectToNewUser(userId, stream), 3000)
   })
 })
@@ -87,7 +73,6 @@ socket.on('user-disconnected', userId => {
 })
 
 myPeer.on('open', peerId => {
-    console.log("peer id at on", peerId)
     socket.emit('join',{username, room: ROOM_ID, peerId, roomname : room}, (error)=>{
         if(error){
             alert(error)
@@ -97,11 +82,10 @@ myPeer.on('open', peerId => {
 })
 
 function connectToNewUser(userId, stream) {
-    console.log("connects new peer")
     const audio = newEl('audio')
     const call = myPeer.call(userId, stream)
   call.on('stream', useraudioStream => {
-      console.log("self audio called")
+      //console.log("self audio called")
     addaudioStream(audio, useraudioStream)
   })
   call.on('close', () => {
@@ -112,7 +96,6 @@ function connectToNewUser(userId, stream) {
 }
 
 function addaudioStream(audio, stream) {
-  console.log("audio added")
   audio.srcObject = stream
   audio.addEventListener('loadedmetadata', () => {
     audio.play()
@@ -146,7 +129,6 @@ const autoscroll = ()=>{
 }
 
 socket.on('message', (message)=>{
-    console.log(message)
     const html = Mustache.render(messageTemplate,{
         username: message.username,
         message: message.text,
@@ -157,7 +139,6 @@ socket.on('message', (message)=>{
 })
 
 socket.on('locationMessage', (location)=>{
-    console.log(location)
     const html = Mustache.render(locationTemplate,{
         username: location.username,
         url: location.url,
@@ -187,7 +168,6 @@ socket.on('roomData', ({room , users})=>{
         if(error){
            return console.log(error)    
         }
-        console.log('Message Delivered!')
     })
  })
 
@@ -207,36 +187,10 @@ socket.on('roomData', ({room , users})=>{
            locate.latitude = position.coords.latitude
            locate.longitude = position.coords.longitude
            socket.emit('send-location', locate,()=>{
-            console.log('Location Shared!')
             $locationButton.removeAttribute('disabled')
            })      
      })     
  })
-
-//file player
-
-let audioCtx;
-let source;
-let songLength;
-
-if(window.webkitAudioContext) {
-  audioCtx = new window.webkitAudioContext();
-} else {
-  audioCtx = new window.AudioContext();
-}
-
-const playAudio = async (bufferdata) => {
-  source = audioCtx.createBufferSource()
-  audioCtx.decodeAudioData(bufferdata, function(buffer) {
-    myBuffer = buffer
-    songLength = buffer.duration
-    source.buffer = myBuffer
-    source.connect(audioCtx.destination)
-    source.loop = false
-  }, function(e){"Error with decoding audio data" + e.error})
-  source.start(0)
-}
-
 
 //RADIO
 let radioSound, volume = 0.5;
@@ -244,7 +198,7 @@ let radioSound, volume = 0.5;
 const playRadioSound = async (url) => {
   if(radioSound) radioSound.stop();
   radioSound = new Howl({
-    src: url, //url //[urlResolved recommended but using url for now] 
+    src: url, 
     format: ['mp3', 'aac'],
     volume,
     html5 : true
@@ -300,10 +254,7 @@ const selectTag = async ($tag) => {
     let stationTags = station.tags
     const stationCountry = station.country
     const stationLanguage = station.language
-    // const stationTags = 'rock'
-    // const stationCountry = 'us'
-    // const stationLanguage = 'english'
-  
+    
     if(stationTags.length > 2){
       stationTags = stationTags.slice(0,2)
     }
@@ -339,8 +290,6 @@ const updateNowPlaying = ({stationName, stationId, stationUrl}) => {
 }
 
 socket.on('catch-webaudiostate', (channelPlaying) => {
-  
-  console.log(channelPlaying)
   if(channelPlaying === null || channelPlaying.stationUrl === null){
     return
   }
@@ -412,24 +361,6 @@ socket.on('stop', (data) => {
   stop(data.stationName, data.stationUrl, data.stationId)
 })
 
-
-
-
-socket.on('test', async (data) => {
-  const stations = await rbapi.searchStations({
-    language: 'english',
-    tag: 'rock',
-    limit: 3
-  })
-  console.log(stations)
-  const url = stations[0].url
-  var sound = new Howl({
-    src: url, 
-    format: ['mp3', 'aac'],
-    html5 : true
-  });
-  sound.play();
-})
 
 
 

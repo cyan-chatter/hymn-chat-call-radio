@@ -2,8 +2,6 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
-//const {RadioBrowserApi, StationSearchOrder, StationSearchType} = require('radio-browser-api')
-//const API = new RadioBrowserApi('Hymn-Chat-Call-Radio')
 const app = express()
 const cors = require("cors")
 const server = http.createServer(app)
@@ -12,17 +10,15 @@ const { v4: uuidV4 } = require('uuid')
 const bodyParser = require("body-parser")
 require('dotenv').config({ path: `${__dirname}/dev.env` })
 
-
-const lyricsFinder = require("lyrics-finder")
-
+const publicDirectoryPath = path.join(__dirname, '../public')
+const port = process.env.PORT || 3000
 
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.set('view engine', 'ejs')
-const publicDirectoryPath = path.join(__dirname, '../public')
 app.use(express.static(publicDirectoryPath))
-const port = process.env.PORT || 3000
+
 const io = socketio.listen(server, {
     log: false,
     agent: false,
@@ -32,14 +28,9 @@ const io = socketio.listen(server, {
 
 const {generateMessage, generateLocation} = require('./utils/messages')
 const {addUser, removeUser, getUser, getUsersInRoom, setAudioState} = require('./utils/users')
-
 const executeCommand = require('./utils/commands')
-// const rba = {
-//     API,  StationSearchOrder, StationSearchType
-// }
 
 const invrooms = []
-
 
 const soloroomid = uuidV4()
 
@@ -83,7 +74,6 @@ app.post('/newmyroom', (req,res)=>{
 app.post('/lobby', (req,res)=>{
     username = req.body.username
     const vals = Array.from(myroomsmap.values())
-    console.log(vals)
     res.render('lobby',{
         username: req.body.username,
         myrooms : vals, 
@@ -102,10 +92,7 @@ app.get('/lobby/:username', (req,res)=>{
 
 
 app.get('/room/:roomid/:username', (req,res) => {
-    console.log(req.params)
-    console.log(myroomsmap.get(req.params.roomid))
     let room = myroomsmap.get(req.params.roomid).roomname
-    console.log(room)
     if(!room) return res.redirect('/')
     const tags = [
         'classical',
@@ -127,15 +114,8 @@ app.get('/room/:roomid/:username', (req,res) => {
     res.render('chat', data)
 })
   
-app.get("/lyrics", async (req, res) => {
-    const lyrics =
-        (await lyricsFinder(req.query.artist, req.query.track)) || "No Lyrics Found"
-    res.json({ lyrics })
-})
-
 
 io.on('connection', (socket)=>{
-    console.log('New Web Socket Connection')
     socket.on('join', (options, callback)=>{
         const {error, user} = addUser({ id: socket.id, ...options})
         if(error){
@@ -167,8 +147,6 @@ io.on('connection', (socket)=>{
         
         io.to(user.room).emit('message',generateMessage(user.username, messageText))
         callback('Message Delivered!')
-        const room = myroomsmap.get(user.room)
-        console.log(room.channelPlaying)
     })
 
     socket.on('disconnect',async ()=>{
